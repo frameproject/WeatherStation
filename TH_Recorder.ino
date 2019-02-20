@@ -56,53 +56,46 @@ float temp, humidity;
 /////////////////////////////////////////////////////////////////
 
 /****************************************************************/
-/*                setup                                         */
+/*                          setup                               */
 /****************************************************************/
 void setup()
 {
 Serial.begin(9600);
 
-checkLCD();
-checkSD();
-checkRTC();
-//checkESP();
-checkDHT();
+// T and H sensor
+dht.begin();
+
+// LCD
+lcd.begin (16, 2);                 
+lcd.clear();
+lcd.setCursor(0, 0);  
+lcd.setBacklight(LOW);
 }
+
 /****************************************************************/
-/*                loop                                          */
+/*                          loop                                */
 /****************************************************************/
 void loop()
-{
-  int timer=0;
-  
-  float t=0.0, h=0.0;
+{  
+  getSensor();
   
   delay(3000);
 
- /* if(getSensor(&t, &h)==0)
-  {    
-      if(timer==19)
-      {
-        timer=0;
-        saveData();       
-        sendData();
-      }    
-  }
-  timer++;*/
 } 
+
 /****************************************************************/
-/*                Init                                          */
+/*                       check component                        */
 /****************************************************************/
-void initSystem()
+void checkSystem()
 {
-  ////ESP
-  checkESP();
-  
-  ////DHT
-  dht.begin();
+checkLCD();
+checkSD();
+checkRTC();
+checkESP();
+checkDHT();
 }
 /****************************************************************/
-/*                Print                                         */
+/*                           Print                              */
 /****************************************************************/
 void print2digits(int number) {
   if (number >= 0 && number < 10) {
@@ -111,7 +104,7 @@ void print2digits(int number) {
   Serial.print(number);
 }
 /****************************************************************/
-/*                Enregistre data                               */
+/*                         Record data                          */
 /****************************************************************/
 void saveData()
 {
@@ -138,17 +131,17 @@ Serial.println("Save data");
   }
 }
 /****************************************************************/
-/*                Capteur                                       */
+/*                         get Sensor T / H                     */
 /****************************************************************/
-int getSensor(float *t, float *h)
+int getSensor()
 {
 Serial.println("getSensor");
 
- *h=dht.readHumidity();
+ humidity=dht.readHumidity();
 // Read temperature as Celsius (the default)
- *t = dht.readTemperature();
+ temp = dht.readTemperature();
 
-if (isnan(*h) || isnan(*t) ) {
+if (isnan(humidity) || isnan(temp) ) {
      lcd.clear();
      lcd.setCursor(0, 0);
      lcd.print("Failed sensor!");
@@ -159,17 +152,17 @@ else
   lcd.setCursor(0, 0);
   lcd.print("T:     ");
   lcd.setCursor(2, 0);
-  lcd.print(*t);
+  lcd.print(temp);
   lcd.setCursor(8, 0);
   lcd.print("H:     ");
   lcd.setCursor(10, 0);
-  lcd.print(*h); 
+  lcd.print(humidity); 
 }
   return 0;
 }
 
 /****************************************************************/
-/*                Envoie les donnees vers le cloud              */
+/*                       Data to cloud                          */
 /****************************************************************/
 void sendData()
 {
@@ -191,7 +184,7 @@ Serial.println("sendData");
   
   // Set String, Data to send by GET method
   String getStr = "GET /update?api_key=";
-  getStr += "Q9015QGHZZCML7QO";
+  getStr += "Q9015QGHZZCML7Qm";
   getStr +="&field1=1";  
   getStr += "\r\n\r\n";
  
@@ -212,7 +205,7 @@ Serial.println("sendData");
   recoitDuESP8266(2000);
 }
 /****************************************************************/
-/*                Fonction qui initialise l'ESP8266             */
+/*                  initialize ESP8266                          */
 /****************************************************************/
 void initESP8266()
 {  
@@ -246,14 +239,14 @@ void initESP8266()
 }
 
 /****************************************************************/
-/*        Fonction qui envoie une commande à l'ESP8266          */
+/*                        Data to ESP8266                       */
 /****************************************************************/
 void envoieAuESP8266(String commande)
 {  
   Serial1.println(commande);
 }
 /****************************************************************/
-/*Fonction qui lit et affiche les messages envoyés par l'ESP8266*/
+/*                       Data from ESP8266                      */
 /****************************************************************/
 void recoitDuESP8266(const int timeout)
 {
@@ -271,7 +264,7 @@ void recoitDuESP8266(const int timeout)
 }
 
 /****************************************************************/
-/*                        Verifie DS3231                        */
+/*                        check DS3231                          */
 /****************************************************************/
 // Arduino Mega:
 // ----------------------
@@ -308,7 +301,7 @@ void checkRTC()
 }
 
 /****************************************************************/
-/*                        Verifie LCD                           */
+/*                        check LCD                             */
 /****************************************************************/
 void checkLCD()
 {
@@ -322,7 +315,7 @@ void checkLCD()
 }
 
 /****************************************************************/
-/*                        Verifie SD                            */
+/*                        check SD                              */
 /****************************************************************/
 void checkSD()
 {
@@ -402,7 +395,7 @@ Serial.print("\nInitializing SD card...");
 }
 
 /****************************************************************/
-/*                        Verifie ESP                           */
+/*                        check ESP                             */
 /****************************************************************/
 void checkESP()
 {
@@ -412,7 +405,7 @@ sendData();
 }
 
 /****************************************************************/
-/*                        Verifie DHT                           */
+/*                        check DHT                             */
 /****************************************************************/
 void checkDHT()
 {
