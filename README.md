@@ -1,8 +1,6 @@
 # WeatherStation
 Weather station with arduino MEGA / ESP8266
 
-Weather station with arduino
-
 This weather station has the following characteristics:
 
 - LCD display (2 x 16)
